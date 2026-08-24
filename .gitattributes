@@ -1,0 +1,22 @@
+# ==============================================================================
+# GitHub Linguist Language Override
+# https://github.com/github/linguist/blob/master/docs/overrides.md
+# ==============================================================================
+
+# Exclude all static web assets from language stats
+www/** linguist-vendored=true
+www/** linguist-detectable=false
+www/* linguist-detectable=false
+
+# Specific asset patterns inside www
+www/**/*.js linguist-detectable=false
+www/**/*.css linguist-detectable=false
+www/*.html linguist-detectable=false
+www/**/*.html linguist-detectable=false
+
+# Documentation files
+docs/** linguist-documentation=true
+docs/** linguist-detectable=false
+
+# Force Go files to be detected and prioritized
+*.go linguist-detectable=true

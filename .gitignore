@@ -1,0 +1,8 @@
+# Git Ignore for trot-web
+
+# Local downloads
+/downloads/
+
+# OS / Editor generated
+.DS_Store
+.vscode/

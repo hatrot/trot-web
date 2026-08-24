@@ -1,0 +1,236 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="100%" height="100%" style="background:#0b0f19; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="googleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4285F4"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+
+    <linearGradient id="benefitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <!-- Filters for Shadows & Glow -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+
+    <filter id="greenGlow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#10b981" flood-opacity="0.35"/>
+    </filter>
+
+    <filter id="blueGlow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#3b82f6" flood-opacity="0.35"/>
+    </filter>
+
+    <!-- Markers -->
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#34d399"/>
+    </marker>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <g transform="translate(40, 36)">
+    <text x="0" y="0" font-size="21" font-weight="800" fill="#f8fafc" letter-spacing="0.5">trot-web システムアーキテクチャ &amp; GAE/Go 採用メリット</text>
+    <text x="0" y="22" font-size="12" fill="#94a3b8">Google Cloud の標準基盤 × Go の爆速起動により、月額 0 円・完全ゼロスケールでエンタープライズ級の耐障害性を実現</text>
+  </g>
+
+  <!-- ==================== TOP BANNER: 4 CORE BENEFITS OF GAE/Go ==================== -->
+  <g transform="translate(40, 72)">
+    <rect x="0" y="0" width="920" height="52" rx="10" fill="url(#benefitGrad)" stroke="#334155" stroke-width="1"/>
+    
+    <!-- Benefit 1 -->
+    <g transform="translate(18, 12)">
+      <text x="0" y="14" font-size="12" font-weight="800" fill="#38bdf8">⚡ 爆速コールドスタート</text>
+      <text x="0" y="28" font-size="10" fill="#94a3b8">Go軽量バイナリで数10ms起動（待機遅延0）</text>
+    </g>
+    <line x1="235" y1="10" x2="235" y2="42" stroke="#334155"/>
+
+    <!-- Benefit 2 -->
+    <g transform="translate(250, 12)">
+      <text x="0" y="14" font-size="12" font-weight="800" fill="#60a5fa">🛡️ GFE直結 DDoS防御</text>
+      <text x="0" y="28" font-size="10" fill="#94a3b8">L3/L4攻撃をGoogleエッジ帯域で自動無効化</text>
+    </g>
+    <line x1="475" y1="10" x2="475" y2="42" stroke="#334155"/>
+
+    <!-- Benefit 3 -->
+    <g transform="translate(490, 12)">
+      <text x="0" y="14" font-size="12" font-weight="800" fill="#34d399">💰 月額 0 円 Always Free</text>
+      <text x="0" y="28" font-size="10" fill="#94a3b8">1日28h無料枠 × min:0台（アイドル時完全0円）</text>
+    </g>
+    <line x1="710" y1="10" x2="710" y2="42" stroke="#334155"/>
+
+    <!-- Benefit 4 -->
+    <g transform="translate(725, 12)">
+      <text x="0" y="14" font-size="12" font-weight="800" fill="#a7f3d0">🔀 静的CDN × 本格Go実行</text>
+      <text x="0" y="28" font-size="10" fill="#94a3b8">ノーコードGCS配信 &amp; Gemini APIセキュア中継</text>
+    </g>
+  </g>
+
+
+  <!-- ==================== 1. LEFT COLUMN: CLIENTS ==================== -->
+  <g id="col-clients" transform="translate(40, 140)">
+    <!-- Main Box -->
+    <rect x="0" y="0" width="190" height="520" rx="16" fill="#111827" stroke="#1f2937" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect x="0" y="0" width="190" height="42" rx="16" fill="#1f2937"/>
+    <rect x="0" y="26" width="190" height="16" fill="#1f2937"/>
+    <text x="18" y="26" font-size="13" font-weight="700" fill="#f3f4f6">📱 訪問者 / クライアント</text>
+
+    <!-- Item 1: End Users -->
+    <g transform="translate(15, 60)">
+      <rect x="0" y="0" width="160" height="115" rx="10" fill="#1e293b" stroke="#334155"/>
+      <circle cx="20" cy="22" r="10" fill="#3b82f6" opacity="0.2"/>
+      <text x="20" y="26" font-size="12" text-anchor="middle" fill="#60a5fa">🌐</text>
+      <text x="38" y="24" font-size="12" font-weight="700" fill="#f8fafc">一般エンドユーザー</text>
+      <text x="12" y="52" font-size="10.5" fill="#cbd5e1">PC・スマホの</text>
+      <text x="12" y="68" font-size="10.5" fill="#cbd5e1">モダンWebブラウザ</text>
+      <text x="12" y="96" font-size="10" fill="#64748b">HTTPS (HTTP/2, HTTP/3)</text>
+    </g>
+
+    <!-- Item 2: SNS Crawlers -->
+    <g transform="translate(15, 205)">
+      <rect x="0" y="0" width="160" height="115" rx="10" fill="#1e293b" stroke="#334155"/>
+      <circle cx="20" cy="22" r="10" fill="#a855f7" opacity="0.2"/>
+      <text x="20" y="26" font-size="12" text-anchor="middle" fill="#c084fc">🤖</text>
+      <text x="38" y="24" font-size="12" font-weight="700" fill="#f8fafc">SNS クローラー</text>
+      <text x="12" y="52" font-size="10.5" fill="#cbd5e1">𝕏 / note / LINE / FB</text>
+      <text x="12" y="68" font-size="10.5" fill="#cbd5e1">リンク共有時のBot</text>
+      <text x="12" y="96" font-size="10" fill="#64748b">OGP メタタグ・画像取得</text>
+    </g>
+
+    <!-- Item 3: AI Chat Users -->
+    <g transform="translate(15, 350)">
+      <rect x="0" y="0" width="160" height="115" rx="10" fill="#1e293b" stroke="#334155"/>
+      <circle cx="20" cy="22" r="10" fill="#06b6d4" opacity="0.2"/>
+      <text x="20" y="26" font-size="12" text-anchor="middle" fill="#22d3ee">💬</text>
+      <text x="38" y="24" font-size="12" font-weight="700" fill="#f8fafc">AI Q&amp;A 利用者</text>
+      <text x="12" y="52" font-size="10.5" fill="#cbd5e1">Webサイト右下の</text>
+      <text x="12" y="68" font-size="10.5" fill="#cbd5e1">AI対話ウィジェット</text>
+      <text x="12" y="96" font-size="10" fill="#64748b">リアルタイム質問・対話</text>
+    </g>
+  </g>
+
+
+  <!-- ==================== 2. MIDDLE COLUMN: GCP (BLUE THEME) ==================== -->
+  <g id="col-google" transform="translate(290, 140)">
+    <!-- Main Box -->
+    <rect x="0" y="0" width="310" height="520" rx="16" fill="#0c1e3a" fill-opacity="0.4" stroke="#1d4ed8" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect x="0" y="0" width="310" height="42" rx="16" fill="#1e3a8a"/>
+    <rect x="0" y="26" width="310" height="16" fill="#1e3a8a"/>
+    <line x1="0" y1="42" x2="310" y2="42" stroke="#3b82f6" stroke-width="2"/>
+    <text x="18" y="26" font-size="13" font-weight="800" fill="#ffffff">☁️ Google Cloud Platform (GCP)</text>
+
+    <!-- Sub 1: GFE & DDoS (Blue) -->
+    <g transform="translate(15, 60)">
+      <rect x="0" y="0" width="280" height="130" rx="10" fill="#0f172a" stroke="#2563eb" stroke-width="1.2"/>
+      <rect x="10" y="10" width="60" height="18" rx="4" fill="#1e40af"/>
+      <text x="40" y="23" font-size="10" font-weight="700" text-anchor="middle" fill="#93c5fd">エッジ防御</text>
+      <text x="78" y="24" font-size="12.5" font-weight="700" fill="#60a5fa">Google Front End (GFE)</text>
+      
+      <text x="12" y="48" font-size="10.5" fill="#cbd5e1">世界規模 Anycast IP で即座に終端</text>
+      <text x="12" y="68" font-size="10.5" font-weight="600" fill="#93c5fd">✓ L3/L4 DDoS 自動無効化 (Always-on)</text>
+      <text x="12" y="86" font-size="9.5" fill="#64748b">SYNフラッド・UDP攻撃をアプリ到達前に吸収</text>
+      <text x="12" y="106" font-size="10.5" font-weight="600" fill="#60a5fa">✓ 自動マネージド SSL/TLS 終端</text>
+    </g>
+
+    <!-- Sub 2: Edge Cache (Blue) -->
+    <g transform="translate(15, 205)">
+      <rect x="0" y="0" width="280" height="125" rx="10" fill="#0f172a" stroke="#2563eb" stroke-width="1.2"/>
+      <rect x="10" y="10" width="60" height="18" rx="4" fill="#1e40af"/>
+      <text x="40" y="23" font-size="10" font-weight="700" text-anchor="middle" fill="#93c5fd">CDN配信</text>
+      <text x="78" y="24" font-size="12.5" font-weight="700" fill="#60a5fa">Google エッジキャッシュ</text>
+
+      <text x="12" y="48" font-size="10.5" fill="#cbd5e1">静的アセット（HTML/CSS/画像/OGP）を配信</text>
+      <text x="12" y="70" font-size="10" fill="#94a3b8">• 2回目以降のアクセスは 0ms で即座に応答</text>
+      <text x="12" y="88" font-size="10" fill="#94a3b8">• スパイク時でもオリジンサーバー負荷 0</text>
+      <text x="12" y="106" font-size="10" font-weight="600" fill="#93c5fd">• キャッシュ配信によりサーバー費用 0 円</text>
+    </g>
+
+    <!-- Sub 3: App Engine Base (Blue) -->
+    <g transform="translate(15, 345)">
+      <rect x="0" y="0" width="280" height="155" rx="10" fill="#0f172a" stroke="#2563eb" stroke-width="1.2"/>
+      <rect x="10" y="10" width="60" height="18" rx="4" fill="#1e40af"/>
+      <text x="40" y="23" font-size="10" font-weight="700" text-anchor="middle" fill="#93c5fd">サーバーレス</text>
+      <text x="78" y="24" font-size="12.5" font-weight="700" fill="#60a5fa">App Engine (Standard)</text>
+
+      <text x="12" y="48" font-size="10.5" fill="#cbd5e1">完全ゼロスケール (`min_instances: 0`)</text>
+      <text x="12" y="70" font-size="10" fill="#94a3b8">• アイドル時はインスタンス 0 台（完全無料）</text>
+      <text x="12" y="88" font-size="10" fill="#94a3b8">• リクエスト着信時に Go が数10msで即座に起動</text>
+      <text x="12" y="106" font-size="10" fill="#94a3b8">• gVisor によるセキュアなコンテナ分離</text>
+      <text x="12" y="130" font-size="10" font-weight="600" fill="#93c5fd">✓ サーバー管理・パッチ当て不要のフルマネージド</text>
+    </g>
+  </g>
+
+
+  <!-- ==================== 3. RIGHT COLUMN: WEB SITE ARTIFACTS (GREEN + ORANGE ACCENT) ==================== -->
+  <g id="col-artifacts" transform="translate(660, 140)">
+    <!-- Big Highlight Card (Green Theme) -->
+    <rect x="0" y="0" width="300" height="520" rx="16" fill="#064e3b" fill-opacity="0.3" stroke="#10b981" stroke-width="2" filter="url(#greenGlow)"/>
+    <rect x="0" y="0" width="300" height="42" rx="16" fill="#047857"/>
+    <rect x="0" y="26" width="300" height="16" fill="#047857"/>
+    <text x="16" y="26" font-size="13" font-weight="800" fill="#ffffff">★ Webサイト本体 (main.go &amp; www)</text>
+
+    <!-- 1. 静的サイト www/ (Green Tab) -->
+    <g transform="translate(12, 56)">
+      <rect x="0" y="0" width="276" height="125" rx="10" fill="#0b1e17" stroke="#10b981" stroke-width="1.3"/>
+      <rect x="10" y="10" width="76" height="18" rx="4" fill="#065f46"/>
+      <text x="48" y="23" font-size="10" font-weight="700" text-anchor="middle" fill="#6ee7b7">① 静的サイト</text>
+      <text x="94" y="24" font-size="12" font-weight="800" fill="#ecfdf5">`www/` (HTML/CSS/JS)</text>
+      
+      <text x="12" y="48" font-size="10.5" fill="#d1fae5">・洗練されたフロストガラスUI &amp; 沿革年表</text>
+      <text x="12" y="66" font-size="10.5" fill="#d1fae5">・OGP カード (1200x630) &amp; AI ウィジェット</text>
+      <text x="12" y="88" font-size="10.5" font-weight="700" fill="#34d399">→ `gcloud storage rsync` でノーコード更新</text>
+      <text x="12" y="106" font-size="9.5" fill="#6ee7b7">（サーバーの再ビルド・再起動が一切不要）</text>
+    </g>
+
+    <!-- 2. Webサーバー : ai/ (Q&A) (Orange Tab ★ Highlight) -->
+    <g transform="translate(12, 195)">
+      <rect x="0" y="0" width="276" height="145" rx="10" fill="#17120a" stroke="#d97706" stroke-width="1.4"/>
+      <rect x="10" y="10" width="82" height="18" rx="4" fill="#b45309"/>
+      <text x="51" y="23" font-size="10" font-weight="800" text-anchor="middle" fill="#fef3c7">② Webサーバー</text>
+      <text x="100" y="24" font-size="12" font-weight="800" fill="#fef3c7">`ai/` (Q&amp;A)</text>
+      
+      <text x="12" y="48" font-size="10.5" fill="#fef08a">・わずか数十行の超軽量 Go HTTP サーバー</text>
+      <text x="12" y="66" font-size="10.5" fill="#fef08a">・GCS バケット（www）を透過ストリーミング</text>
+      <text x="12" y="84" font-size="10.5" fill="#fef08a">・Gemini 2.0 Flash 連携 `/api/chat` API</text>
+      <text x="12" y="106" font-size="10.5" font-weight="700" fill="#fbbf24">→ Go × GAE の爆速コールドスタート</text>
+      <text x="12" y="124" font-size="9.5" fill="#fde047">（`app.yaml` 14行のシンプル設定で稼働）</text>
+    </g>
+
+    <!-- 3. AI ナレッジ docs/ (Orange Tab ★ Highlight) -->
+    <g transform="translate(12, 354)">
+      <rect x="0" y="0" width="276" height="150" rx="10" fill="#17120a" stroke="#d97706" stroke-width="1.4"/>
+      <rect x="10" y="10" width="80" height="18" rx="4" fill="#b45309"/>
+      <text x="50" y="23" font-size="10" font-weight="800" text-anchor="middle" fill="#fef3c7">③ AI ナレッジ</text>
+      <text x="98" y="24" font-size="12" font-weight="800" fill="#fef3c7">`docs/` (Markdown)</text>
+      
+      <text x="12" y="48" font-size="10.5" fill="#fef08a">・`history_knowledge.md` (公式沿革・実績)</text>
+      <text x="12" y="66" font-size="10.5" fill="#fef08a">・Single Source of Truth (推測を完全禁止)</text>
+      <text x="12" y="84" font-size="10.5" fill="#fef08a">・落ち着いた語り口のペルソナプロンプト</text>
+      <text x="12" y="106" font-size="10.5" font-weight="700" fill="#fbbf24">→ Gemini のハルシネーションを徹底防御</text>
+      <text x="12" y="126" font-size="9.5" fill="#fde047">（公式ナレッジにない内容は推測せず案内）</text>
+    </g>
+  </g>
+
+
+  <!-- ==================== SIMPLE & CLEAN OUTER BOX-TO-BOX CONNECTORS ==================== -->
+  
+  <!-- Arrow 1: Clients -> GCP (Blue Arrow) -->
+  <g transform="translate(230, 390)">
+    <line x1="0" y1="0" x2="52" y2="0" stroke="#38bdf8" stroke-width="3" marker-end="url(#arrowBlue)"/>
+    <rect x="8" y="-24" width="38" height="18" rx="4" fill="#0f172a" stroke="#334155"/>
+    <text x="27" y="-12" font-size="9.5" font-weight="700" text-anchor="middle" fill="#38bdf8">HTTPS</text>
+  </g>
+
+  <!-- Arrow 2: GCP -> Web Site Artifacts (Green Arrow) -->
+  <g transform="translate(600, 390)">
+    <line x1="0" y1="0" x2="52" y2="0" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)"/>
+    <rect x="4" y="-24" width="46" height="18" rx="4" fill="#0f172a" stroke="#334155"/>
+    <text x="27" y="-12" font-size="9.5" font-weight="700" text-anchor="middle" fill="#34d399">実行/配信</text>
+  </g>
+
+</svg>
