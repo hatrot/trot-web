@@ -354,11 +354,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		obj = "www/" + obj
 	}
 
-	// 1. ローカルファイルが存在する場合は直接配信 (ローカル開発・テスト用)
-	if info, err := os.Stat(obj); err == nil && !info.IsDir() {
-		w.Header().Set("Cache-Control", cas)
-		http.ServeFile(w, r, obj)
-		return
+	// 1. ローカル開発環境（GAE環境以外）の場合はローカル静的ファイルを直接配信
+	isGAE := os.Getenv("GAE_ENV") != "" || os.Getenv("GAE_INSTANCE") != ""
+	if !isGAE {
+		if info, err := os.Stat(obj); err == nil && !info.IsDir() {
+			w.Header().Set("Cache-Control", cas)
+			http.ServeFile(w, r, obj)
+			return
+		}
 	}
 
 	// 2. GCS からの読み込み (本番環境用)
