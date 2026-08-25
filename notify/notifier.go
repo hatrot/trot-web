@@ -151,6 +151,7 @@ type SendGridNotifier struct {
 	apiKey    string
 	fromEmail string
 	toEmail   string
+	apiURL    string
 	client    *http.Client
 }
 
@@ -162,6 +163,7 @@ func NewSendGridNotifier(apiKey, fromEmail, toEmail string) *SendGridNotifier {
 		apiKey:    apiKey,
 		fromEmail: fromEmail,
 		toEmail:   toEmail,
+		apiURL:    "https://api.sendgrid.com/v3/mail/send",
 		client:    &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -232,7 +234,11 @@ func (sg *SendGridNotifier) Send(ctx context.Context, msg ContactMessage) error 
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.sendgrid.com/v3/mail/send", bytes.NewReader(body))
+	apiEndpoint := sg.apiURL
+	if apiEndpoint == "" {
+		apiEndpoint = "https://api.sendgrid.com/v3/mail/send"
+	}
+	req, err := http.NewRequestWithContext(ctx, "POST", apiEndpoint, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}

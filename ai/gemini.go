@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -9,14 +10,16 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
 // GeminiProvider implements LLMProvider using Google's Gemini REST API.
 type GeminiProvider struct {
-	APIKey string
-	Model  string
-	Client *http.Client
+	APIKey  string
+	Model   string
+	BaseURL string
+	Client  *http.Client
 }
 
 // NewGeminiProvider creates a new GeminiProvider.
@@ -32,9 +35,10 @@ func NewGeminiProvider(apiKey string, model string) *GeminiProvider {
 		}
 	}
 	return &GeminiProvider{
-		APIKey: apiKey,
-		Model:  model,
-		Client: &http.Client{Timeout: 30 * time.Second},
+		APIKey:  apiKey,
+		Model:   model,
+		BaseURL: "https://generativelanguage.googleapis.com",
+		Client:  &http.Client{Timeout: 30 * time.Second},
 	}
 }
 
@@ -81,13 +85,7 @@ type geminiResp struct {
 	} `json:"error,omitempty"`
 }
 
-func (g *GeminiProvider) GenerateReply(ctx context.Context, systemPrompt string, history []Message, prompt string) (string, error) {
-	if g.APIKey == "" {
-		return "", fmt.Errorf("GEMINI_API_KEY is not configured")
-	}
-
-	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", g.Model, g.APIKey)
-
+func (g *GeminiProvider) buildRequestBody(systemPrompt string, history []Message, prompt string) ([]byte, error) {
 	var contents []geminiContent
 	for _, m := range history {
 		role := m.Role
@@ -117,7 +115,21 @@ func (g *GeminiProvider) GenerateReply(ctx context.Context, systemPrompt string,
 		}
 	}
 
-	payload, err := json.Marshal(bodyData)
+	return json.Marshal(bodyData)
+}
+
+func (g *GeminiProvider) GenerateReply(ctx context.Context, systemPrompt string, history []Message, prompt string) (string, error) {
+	if g.APIKey == "" {
+		return "", fmt.Errorf("GEMINI_API_KEY is not configured")
+	}
+
+	baseURL := g.BaseURL
+	if baseURL == "" {
+		baseURL = "https://generativelanguage.googleapis.com"
+	}
+	url := fmt.Sprintf("%s/v1beta/models/%s:generateContent?key=%s", baseURL, g.Model, g.APIKey)
+
+	payload, err := g.buildRequestBody(systemPrompt, history, prompt)
 	if err != nil {
 		return "", fmt.Errorf("marshal request failed: %w", err)
 	}
@@ -158,4 +170,89 @@ func (g *GeminiProvider) GenerateReply(ctx context.Context, systemPrompt string,
 	}
 
 	return gResp.Candidates[0].Content.Parts[0].Text, nil
+}
+
+func (g *GeminiProvider) GenerateReplyStream(ctx context.Context, systemPrompt string, history []Message, prompt string, onChunk StreamChunkHandler) error {
+	if g.APIKey == "" {
+		return fmt.Errorf("GEMINI_API_KEY is not configured")
+	}
+
+	baseURL := g.BaseURL
+	if baseURL == "" {
+		baseURL = "https://generativelanguage.googleapis.com"
+	}
+	url := fmt.Sprintf("%s/v1beta/models/%s:streamGenerateContent?alt=sse&key=%s", baseURL, g.Model, g.APIKey)
+
+	payload, err := g.buildRequestBody(systemPrompt, history, prompt)
+	if err != nil {
+		return fmt.Errorf("marshal request failed: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
+	if err != nil {
+		return fmt.Errorf("create request failed: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Use Client without default timeout if we want stream-level context timeout
+	resp, err := g.Client.Do(req)
+	if err != nil {
+		return fmt.Errorf("gemini streaming request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBytes, _ := io.ReadAll(resp.Body)
+		var gResp geminiResp
+		if err := json.Unmarshal(respBytes, &gResp); err == nil && gResp.Error != nil {
+			return fmt.Errorf("gemini api error: %s (code: %d)", gResp.Error.Message, gResp.Error.Code)
+		}
+		return fmt.Errorf("gemini streaming request failed with status %d: %s", resp.StatusCode, string(respBytes))
+	}
+
+	reader := bufio.NewReader(resp.Body)
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return fmt.Errorf("error reading stream: %w", err)
+		}
+
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "data:") {
+			continue
+		}
+
+		dataJSON := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
+		if dataJSON == "" || dataJSON == "[DONE]" {
+			continue
+		}
+
+		var chunkResp geminiResp
+		if err := json.Unmarshal([]byte(dataJSON), &chunkResp); err != nil {
+			log.Printf("Gemini stream unmarshal chunk warning: %v (data: %s)", err, dataJSON)
+			continue
+		}
+
+		if chunkResp.Error != nil {
+			return fmt.Errorf("gemini api streaming error: %s (code: %d)", chunkResp.Error.Message, chunkResp.Error.Code)
+		}
+
+		if chunkResp.UsageMetadata != nil {
+			log.Printf("[Gemini Stream Token Usage] Model: %s, Total: %d tokens", g.Model, chunkResp.UsageMetadata.TotalTokenCount)
+		}
+
+		if len(chunkResp.Candidates) > 0 && len(chunkResp.Candidates[0].Content.Parts) > 0 {
+			text := chunkResp.Candidates[0].Content.Parts[0].Text
+			if text != "" {
+				if err := onChunk(text); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
 }

@@ -58,3 +58,65 @@ func TestService_ProviderSwapping(t *testing.T) {
 		t.Errorf("Expected Gemini provider, got: %s", svc.ProviderName())
 	}
 }
+
+func TestService_AskStream(t *testing.T) {
+	svc := NewService(NewMockProvider())
+	ctx := context.Background()
+
+	var chunks []string
+	provider, err := svc.AskStream(ctx, nil, "得意な技術について教えて", func(chunk string) error {
+		chunks = append(chunks, chunk)
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("AskStream failed: %v", err)
+	}
+
+	if provider != "Mock (Offline Demo)" {
+		t.Errorf("Expected Mock provider, got %s", provider)
+	}
+
+	if len(chunks) == 0 {
+		t.Errorf("Expected chunks from streaming, got 0")
+	}
+
+	fullReply := strings.Join(chunks, "")
+	if !strings.Contains(fullReply, "Go言語") && !strings.Contains(fullReply, "ゼロスケール") {
+		t.Errorf("Expected technical keywords in stream, got: %s", fullReply)
+	}
+}
+
+func TestService_GetService_Status(t *testing.T) {
+	// Test Default Service Singleton
+	svc := GetService()
+	if svc == nil {
+		t.Fatalf("Expected non-nil default service")
+	}
+
+	st := svc.Status()
+	if st.Provider == "" {
+		t.Errorf("Expected provider name in status")
+	}
+}
+
+func TestService_NilProvider(t *testing.T) {
+	svc := &Service{}
+	if svc.ProviderName() != "None" {
+		t.Errorf("Expected 'None' for nil provider, got %s", svc.ProviderName())
+	}
+
+	_, _, err := svc.Ask(context.Background(), nil, "test")
+	if err == nil || !strings.Contains(err.Error(), "no LLM provider configured") {
+		t.Errorf("Expected no LLM provider error, got: %v", err)
+	}
+
+	_, err = svc.AskStream(context.Background(), nil, "test", func(chunk string) error { return nil })
+	if err == nil || !strings.Contains(err.Error(), "no LLM provider configured") {
+		t.Errorf("Expected no LLM provider error, got: %v", err)
+	}
+
+	st := svc.Status()
+	if st.Ready {
+		t.Errorf("Expected Ready false for uninitialized service")
+	}
+}

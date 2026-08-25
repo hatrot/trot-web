@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // MockProvider provides mock responses for offline testing and verification.
@@ -32,4 +33,36 @@ func (m *MockProvider) GenerateReply(ctx context.Context, systemPrompt string, h
 	default:
 		return fmt.Sprintf("なるほど、「%s」ですね！\n\nあいにく私のトロット公式アーカイブにはまだ記載のない未知の領域です。勝手な憶測を語って社内コードレビューで怒られるわけにはいかないので（笑）、詳細なご相談やお問い合わせはぜひ [info@trot.co.jp](mailto:info@trot.co.jp) までお気軽にどうぞ！", prompt), nil
 	}
+}
+
+func (m *MockProvider) GenerateReplyStream(ctx context.Context, systemPrompt string, history []Message, prompt string, onChunk StreamChunkHandler) error {
+	fullText, err := m.GenerateReply(ctx, systemPrompt, history, prompt)
+	if err != nil {
+		return err
+	}
+
+	// Stream characters/runes in small batches to simulate typing
+	runes := []rune(fullText)
+	chunkSize := 3
+	for i := 0; i < len(runes); i += chunkSize {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		end := i + chunkSize
+		if end > len(runes) {
+			end = len(runes)
+		}
+
+		chunk := string(runes[i:end])
+		if err := onChunk(chunk); err != nil {
+			return err
+		}
+
+		time.Sleep(15 * time.Millisecond)
+	}
+
+	return nil
 }

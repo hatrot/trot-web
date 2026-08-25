@@ -162,3 +162,45 @@ func (s *Service) Ask(ctx context.Context, history []Message, question string) (
 	}
 	return reply, provider.Name(), nil
 }
+
+// AskStream processes a question and streams response chunks to onChunk handler.
+func (s *Service) AskStream(ctx context.Context, history []Message, question string, onChunk StreamChunkHandler) (string, error) {
+	s.mu.RLock()
+	provider := s.provider
+	sysPrompt := s.systemPrompt
+	s.mu.RUnlock()
+
+	if provider == nil {
+		return "", fmt.Errorf("no LLM provider configured")
+	}
+
+	if err := provider.GenerateReplyStream(ctx, sysPrompt, history, question, onChunk); err != nil {
+		return provider.Name(), err
+	}
+	return provider.Name(), nil
+}
+
+// ServiceStatus contains internal readiness and diagnostics information.
+type ServiceStatus struct {
+	Ready        bool   `json:"ready"`
+	KnowledgeLen int    `json:"knowledge_len"`
+	Provider     string `json:"provider"`
+}
+
+// Status returns current readiness and diagnostics.
+func (s *Service) Status() ServiceStatus {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	ready := len(s.knowledge) > 0 && s.provider != nil
+	providerName := "None"
+	if s.provider != nil {
+		providerName = s.provider.Name()
+	}
+
+	return ServiceStatus{
+		Ready:        ready,
+		KnowledgeLen: len(s.knowledge),
+		Provider:     providerName,
+	}
+}

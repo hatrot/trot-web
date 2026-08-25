@@ -28,6 +28,7 @@ func main() {
 	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/_ah/warmup", warmupHandler)
 	http.HandleFunc("/api/chat", chatHandler)
+	http.HandleFunc("/api/chat-stream", chatStreamHandler)
 	http.HandleFunc("/api/contact", contactHandler)
 	http.HandleFunc("/", indexHandler)
 
@@ -116,6 +117,98 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type streamChunk struct {
+	Text     string `json:"text,omitempty"`
+	Provider string `json:"provider,omitempty"`
+	Error    string `json:"error,omitempty"`
+}
+
+func chatStreamHandler(w http.ResponseWriter, r *http.Request) {
+	// CORS Headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	var req chatRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(chatResponse{Error: "Invalid JSON body"})
+		return
+	}
+
+	if strings.TrimSpace(req.Question) == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(chatResponse{Error: "Question is required"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache, no-transform")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+	w.WriteHeader(http.StatusOK)
+	flusher.Flush()
+
+	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
+	defer cancel()
+
+	service := ai.GetService()
+	providerName := service.ProviderName()
+
+	sendChunk := func(text string) error {
+		chunkJSON, err := json.Marshal(streamChunk{
+			Text:     text,
+			Provider: providerName,
+		})
+		if err != nil {
+			return err
+		}
+		if _, err := fmt.Fprintf(w, "data: %s\n\n", chunkJSON); err != nil {
+			return err
+		}
+		flusher.Flush()
+		return nil
+	}
+
+	_, err := service.AskStream(ctx, req.History, req.Question, sendChunk)
+	if err != nil {
+		log.Printf("chatStreamHandler error: %v", err)
+		if strings.Contains(err.Error(), "GEMINI_API_KEY is not configured") {
+			mock := ai.NewMockProvider()
+			providerName = mock.Name()
+			_ = mock.GenerateReplyStream(ctx, "", req.History, req.Question, sendChunk)
+		} else {
+			errJSON, _ := json.Marshal(streamChunk{
+				Error:    err.Error(),
+				Provider: providerName,
+			})
+			fmt.Fprintf(w, "data: %s\n\n", errJSON)
+			flusher.Flush()
+		}
+	}
+
+	fmt.Fprintf(w, "data: [DONE]\n\n")
+	flusher.Flush()
+}
+
 type contactRequest struct {
 	Name    string `json:"name"`
 	Email   string `json:"email"`
@@ -186,13 +279,50 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
+	service := ai.GetService()
+	st := service.Status()
+
+	// JSON format support (e.g. /_ah/health?format=json or Accept: application/json)
+	if r.URL.Query().Get("format") == "json" || strings.Contains(r.Header.Get("Accept"), "application/json") {
+		w.Header().Set("Content-Type", "application/json")
+		if !st.Ready {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":        "ok",
+			"ready":         st.Ready,
+			"knowledge_len": st.KnowledgeLen,
+			"provider":      st.Provider,
+		})
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/plain")
+	if !st.Ready {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		fmt.Fprint(w, "unhealthy: knowledge not loaded")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, "ok")
 }
 
 func warmupHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Content-Type", "text/plain")
+
+	// 1. Warmup AI Service & Knowledge
+	service := ai.GetService()
+	st := service.Status()
+	log.Printf("[Warmup] AI Knowledge preloaded (%d bytes, Provider: %s)", st.KnowledgeLen, st.Provider)
+
+	// 2. Warmup Unified Notifier
+	_ = notify.NewNotifier()
+	log.Printf("[Warmup] Notifier initialized")
+
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, "warmup done")
 }
 

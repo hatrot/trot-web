@@ -203,7 +203,7 @@
     if (typing) typing.remove();
   }
 
-  // Send Message to API
+  // Send Message to API (SSE Streaming)
   async function sendMessage(question) {
     if (isSending) return;
     isSending = true;
@@ -211,6 +211,7 @@
     const input = document.getElementById('trotChatInput');
     const sendBtn = document.getElementById('trotChatSend');
     const badge = document.getElementById('trotChatBadge');
+    const body = document.getElementById('trotChatBody');
 
     input.value = '';
     sendBtn.disabled = true;
@@ -218,8 +219,11 @@
     // Display user message
     appendMessage('user', formatReply(question));
 
-    // Show typing
+    // Show typing indicator
     showTyping();
+
+    let accumulatedText = '';
+    let botMsgElement = null;
 
     try {
       const payload = {
@@ -227,80 +231,146 @@
         history: chatHistory.slice(-6) // Keep last 3 turns of context
       };
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch('/api/chat-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      removeTyping();
-
       if (!res.ok) {
+        removeTyping();
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || `HTTP ${res.status}`);
       }
 
-      const data = await res.json();
-      
-      if (data.provider) {
-        badge.textContent = data.provider;
+      if (!res.body || !res.body.getReader) {
+        // Fallback for environments without ReadableStream
+        removeTyping();
+        const fallbackText = await res.text();
+        appendMessage('bot', formatReply(fallbackText));
+        return;
       }
 
-      if (data.reply) {
-        let replyText = data.reply;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
 
-        // Check for contact submission tag: [[SUBMIT_CONTACT: {...}]]
-        const contactMatch = replyText.match(/\[\[SUBMIT_CONTACT:\s*({.+?})\s*\]\]/s);
-        if (contactMatch) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        // Keep the last incomplete piece in the buffer
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.startsWith('data:')) continue;
+
+          const dataStr = trimmed.replace(/^data:\s*/, '');
+          if (dataStr === '[DONE]') {
+            continue;
+          }
+
           try {
-            const contactData = JSON.parse(contactMatch[1]);
-            // Clean display text
-            replyText = replyText.replace(contactMatch[0], '').trim();
-            
-            // Send to /api/contact in background
-            fetch('/api/contact', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                name: contactData.name || 'Web訪問者',
-                email: contactData.email || '',
-                content: contactData.content || '',
-                source: 'AIアシスタント (Web Q&A)'
-              })
-            }).then(r => r.json()).then(res => {
-              if (res.status === 'ok') {
-                console.log('Contact inquiry notified to Slack:', res);
+            const data = JSON.parse(dataStr);
+            if (data.provider && badge) {
+              badge.textContent = data.provider;
+            }
+
+            if (data.error) {
+              throw new Error(data.error);
+            }
+
+            if (data.text) {
+              if (!botMsgElement) {
+                removeTyping();
+                botMsgElement = appendMessage('bot', '');
               }
-            }).catch(e => console.error('Contact notification error:', e));
+              accumulatedText += data.text;
 
+              // Hide incomplete contact tag from live view if in progress
+              let displayText = accumulatedText.replace(/\[\[SUBMIT_CONTACT:.*?\]\]/s, '').trim();
+              if (displayText === '' && accumulatedText.includes('[[SUBMIT_CONTACT:')) {
+                // If the entire text was the contact tag, don't clear completely
+                displayText = '（サポート担当へお取り次ぎ中...）';
+              }
+              botMsgElement.innerHTML = formatReply(displayText || accumulatedText);
+              body.scrollTop = body.scrollHeight;
+            }
           } catch (jsonErr) {
-            console.error('Failed to parse contact json:', jsonErr);
+            // Ignore non-json or malformed chunk if it's partial
+            if (jsonErr.message && !jsonErr.message.includes('JSON')) {
+              throw jsonErr;
+            }
           }
         }
-
-        appendMessage('bot', formatReply(replyText));
-
-        // If bot is asking for confirmation to submit, show quick action chip
-        if (replyText.includes('送信してよろしい') || replyText.includes('送信しますか')) {
-          const chips = document.getElementById('trotChatChips');
-          if (chips) {
-            chips.innerHTML = `
-              <button class="trot-chip-btn" style="background:#047857; color:#fff; border-color:#047857;" data-q="はい、この内容でサポートへ送信してください">📤 はい、送信してください</button>
-              <button class="trot-chip-btn" data-q="内容を少し修正したいです">✏️ 修正したい</button>
-            `;
-          }
-        }
-
-        // Update history
-        chatHistory.push({ role: 'user', content: question });
-        chatHistory.push({ role: 'model', content: data.reply });
-      } else {
-        appendMessage('bot', '回答の取得に失敗しました。');
       }
+
+      removeTyping();
+
+      if (!botMsgElement && accumulatedText.trim() === '') {
+        appendMessage('bot', '回答の取得に失敗しました。');
+        return;
+      }
+
+      // Final post-processing on accumulatedText
+      let finalReplyText = accumulatedText;
+
+      // Check for contact submission tag: [[SUBMIT_CONTACT: {...}]]
+      const contactMatch = finalReplyText.match(/\[\[SUBMIT_CONTACT:\s*({.+?})\s*\]\]/s);
+      if (contactMatch) {
+        try {
+          const contactData = JSON.parse(contactMatch[1]);
+          finalReplyText = finalReplyText.replace(contactMatch[0], '').trim();
+          if (botMsgElement) {
+            botMsgElement.innerHTML = formatReply(finalReplyText);
+          }
+
+          // Send to /api/contact in background
+          fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: contactData.name || 'Web訪問者',
+              email: contactData.email || '',
+              content: contactData.content || '',
+              source: 'AIアシスタント (Web Q&A Streaming)'
+            })
+          }).then(r => r.json()).then(res => {
+            if (res.status === 'ok') {
+              console.log('Contact inquiry notified:', res);
+            }
+          }).catch(e => console.error('Contact notification error:', e));
+
+        } catch (jsonErr) {
+          console.error('Failed to parse contact json:', jsonErr);
+        }
+      }
+
+      // If bot is asking for confirmation to submit, show quick action chip
+      if (finalReplyText.includes('送信してよろしい') || finalReplyText.includes('送信しますか')) {
+        const chips = document.getElementById('trotChatChips');
+        if (chips) {
+          chips.innerHTML = `
+            <button class="trot-chip-btn" style="background:#047857; color:#fff; border-color:#047857;" data-q="はい、この内容でサポートへ送信してください">📤 はい、送信してください</button>
+            <button class="trot-chip-btn" data-q="内容を少し修正したいです">✏️ 修正したい</button>
+          `;
+        }
+      }
+
+      // Update history
+      chatHistory.push({ role: 'user', content: question });
+      chatHistory.push({ role: 'model', content: finalReplyText });
 
     } catch (err) {
       removeTyping();
-      appendMessage('bot', `⚠️ エラーが発生しました: ${err.message}`);
+      if (!botMsgElement) {
+        appendMessage('bot', `⚠️ エラーが発生しました: ${err.message}`);
+      } else {
+        botMsgElement.innerHTML += `<br><span style="color:#ef4444; font-size:0.85em;">⚠️ 受信が中断されました: ${err.message}</span>`;
+      }
     } finally {
       isSending = false;
       sendBtn.disabled = false;
