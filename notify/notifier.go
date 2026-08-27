@@ -275,3 +275,48 @@ func (l *LogNotifier) Send(ctx context.Context, msg ContactMessage) error {
 		msg.Name, msg.Email, msg.Source, msg.Content)
 	return nil
 }
+
+// SendSystemAlert sends a system-level alert (e.g. AI Quota warning / Model fallback) to Slack or Log.
+func SendSystemAlert(ctx context.Context, title string, details string) error {
+	loc := time.FixedZone("Asia/Tokyo", 9*60*60)
+	nowStr := time.Now().In(loc).Format("2006/01/02 15:04:05")
+
+	slackURL := os.Getenv("SLACK_WEBHOOK_URL")
+	if slackURL == "" {
+		log.Printf("[System Alert Log] %s | %s | %s", title, nowStr, details)
+		return nil
+	}
+
+	text := fmt.Sprintf("%s\n*日時:* %s (JST)\n%s",
+		title, nowStr, details)
+
+	payload := map[string]interface{}{
+		"text": text,
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", slackURL, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("SendSystemAlert Slack post error: %v", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("slack alert error: status %d, body: %s", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+

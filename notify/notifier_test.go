@@ -197,3 +197,44 @@ func TestNewNotifier_WithEnvVars(t *testing.T) {
 		t.Errorf("Expected default fromEmail, got: %s", sgn.fromEmail)
 	}
 }
+
+func TestSendSystemAlert_NoWebhook(t *testing.T) {
+	os.Unsetenv("SLACK_WEBHOOK_URL")
+	err := SendSystemAlert(context.Background(), "テストタイトル", "テスト詳細")
+	if err != nil {
+		t.Errorf("Expected nil error when no webhook, got: %v", err)
+	}
+}
+
+func TestSendSystemAlert_WithWebhook(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "ok")
+	}))
+	defer server.Close()
+
+	os.Setenv("SLACK_WEBHOOK_URL", server.URL)
+	defer os.Unsetenv("SLACK_WEBHOOK_URL")
+
+	err := SendSystemAlert(context.Background(), "テストタイトル", "テスト詳細")
+	if err != nil {
+		t.Errorf("Expected success sending system alert, got: %v", err)
+	}
+}
+
+func TestSendSystemAlert_WebhookError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "error")
+	}))
+	defer server.Close()
+
+	os.Setenv("SLACK_WEBHOOK_URL", server.URL)
+	defer os.Unsetenv("SLACK_WEBHOOK_URL")
+
+	err := SendSystemAlert(context.Background(), "テストタイトル", "テスト詳細")
+	if err == nil || !strings.Contains(err.Error(), "slack alert error: status 500") {
+		t.Errorf("Expected 500 error, got: %v", err)
+	}
+}
+

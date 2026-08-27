@@ -156,6 +156,12 @@ func (s *Service) Ask(ctx context.Context, history []Message, question string) (
 		return "", "", fmt.Errorf("no LLM provider configured")
 	}
 
+	if gp, ok := provider.(*GeminiProvider); ok {
+		if res, err := GetQuotaManager().SelectActiveModel(ctx); err == nil && res.SelectedModel != "" {
+			gp.Model = res.SelectedModel
+		}
+	}
+
 	reply, err := provider.GenerateReply(ctx, sysPrompt, history, question)
 	if err != nil {
 		return "", provider.Name(), err
@@ -172,6 +178,12 @@ func (s *Service) AskStream(ctx context.Context, history []Message, question str
 
 	if provider == nil {
 		return "", fmt.Errorf("no LLM provider configured")
+	}
+
+	if gp, ok := provider.(*GeminiProvider); ok {
+		if res, err := GetQuotaManager().SelectActiveModel(ctx); err == nil && res.SelectedModel != "" {
+			gp.Model = res.SelectedModel
+		}
 	}
 
 	if err := provider.GenerateReplyStream(ctx, sysPrompt, history, question, onChunk); err != nil {
