@@ -74,33 +74,42 @@
 .trot-chat-header {
   background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
   color: #ffffff;
-  padding: 16px 18px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
 }
 
 .trot-chat-header-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .trot-chat-header-title h4 {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .trot-chat-badge {
-  font-size: 10px;
+  font-size: 10.5px;
   background: rgba(255, 255, 255, 0.22);
   color: #ecfdf5;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 10px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 140px;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .trot-chat-close {

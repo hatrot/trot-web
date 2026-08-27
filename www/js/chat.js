@@ -85,6 +85,16 @@
     return safe;
   }
 
+  // Format model / provider name cleanly for the header badge
+  function formatProviderName(provider) {
+    if (!provider) return 'AI Assistant';
+    if (provider.includes('3.5-flash-lite') || provider.includes('3.5 Lite')) return 'Gemini 3.5 Lite';
+    if (provider.includes('3.1-flash-lite') || provider.includes('3.1 Lite')) return 'Gemini 3.1 Lite';
+    if (provider.includes('3.6-flash') || provider.includes('3.6 Flash')) return 'Gemini 3.6 Flash';
+    if (provider.includes('Mock')) return 'Demo Mode';
+    return provider.replace(/^Gemini\s*\((.+)\)$/, '$1');
+  }
+
   // Attach Event Listeners
   function attachEvents() {
     const trigger = document.getElementById('trotChatTrigger');
@@ -276,7 +286,7 @@
           try {
             const data = JSON.parse(dataStr);
             if (data.provider && badge) {
-              badge.textContent = data.provider;
+              badge.textContent = formatProviderName(data.provider);
             }
 
             if (data.error) {
