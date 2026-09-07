@@ -39,6 +39,30 @@
   <link rel="stylesheet" href="css/chat.css">
   <link rel="shortcut icon" href="images/H.A.T.Logo3-32x32.png" type="image/x-icon">
 
+  <!-- Schema.org Structured Data (AEO & Entity Grounding) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "エイチ・エィ・トロット有限会社",
+    "alternateName": "H.A.Trot Co.,Ltd.",
+    "legalName": "エイチ・エィ・トロット有限会社",
+    "url": "https://trot.co.jp/",
+    "logo": "https://trot.co.jp/images/H.A.T.Logo3-32x32.png",
+    "description": "漠然とした想いから、システムの未来のカタチへ。横浜のシステム開発、モバイルソリューション、ラジオ連携基盤、AI技術支援。",
+    "foundingDate": "1993-10",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "横浜市",
+      "addressRegion": "神奈川県",
+      "addressCountry": "JP"
+    },
+    "sameAs": [
+      "https://x.com/trotcojp"
+    ]
+  }
+  </script>
+
   <style>
     /* STYLE 8: REFINED BALANCED ORGANIC CG BACKGROUND & FROSTED GLASS */
     :root {
@@ -568,7 +592,7 @@
     }
 
     .link-card {
-      background: rgba(255, 255, 255, 0.78);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.72) 100%);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.95);
@@ -576,58 +600,61 @@
       padding: 18px 20px;
       text-decoration: none;
       color: var(--text-main);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 
-        0 8px 20px -4px rgba(15, 23, 42, 0.05),
-        inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        0 4px 16px -2px rgba(15, 23, 42, 0.06),
+        0 1px 2px 0 rgba(15, 23, 42, 0.04),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 84px;
+      flex-direction: column;
+      justify-content: flex-start;
+      position: relative;
+      cursor: pointer;
     }
 
     .link-card:hover {
       transform: translateY(-3px);
       box-shadow: 
-        0 14px 30px -5px rgba(15, 23, 42, 0.10),
-        inset 0 1px 1.5px rgba(255, 255, 255, 1.0);
-      background: rgba(255, 255, 255, 0.92);
-      border-color: var(--accent-green);
+        0 12px 28px -4px rgba(15, 90, 54, 0.12),
+        0 4px 8px -2px rgba(15, 23, 42, 0.06),
+        inset 0 1px 2px rgba(255, 255, 255, 1.0);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 253, 244, 0.85) 100%);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .link-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
     }
 
     .link-left-group {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
     .link-icon-box {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(37, 99, 235, 0.14);
+      border: 1px solid rgba(37, 99, 235, 0.22);
+      color: #1e3a8a;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.25rem;
       flex-shrink: 0;
-      transition: transform 0.3s ease;
+      transition: all 0.25s ease;
     }
 
     .link-card:hover .link-icon-box {
-      transform: scale(1.08);
-    }
-
-    .link-icon-box.note-box {
-      background: rgba(44, 182, 150, 0.12);
-      color: #2cb696;
-    }
-    .link-icon-box.x-box {
-      background: rgba(15, 20, 25, 0.1);
-      color: #0f1419;
-    }
-    .link-icon-box.github-box {
-      background: rgba(36, 41, 46, 0.1);
-      color: #24292e;
+      transform: scale(1.06);
+      background: rgba(37, 99, 235, 0.20);
+      border-color: rgba(37, 99, 235, 0.35);
+      color: #172554;
     }
 
     .link-text-group {
@@ -636,31 +663,64 @@
       justify-content: center;
     }
 
+    .link-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
     .link-name {
-      font-family: 'Outfit', sans-serif;
-      font-weight: 800;
+      font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+      font-weight: 700;
       font-size: 1.05rem;
       color: var(--text-main);
-      line-height: 1.25;
+      line-height: 1.2;
+      margin: 0;
     }
 
     .link-sub {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      font-weight: 500;
+      font-size: 0.82rem;
+      color: var(--accent-green);
+      font-weight: 600;
       line-height: 1.2;
     }
 
-    .link-arrow-icon {
-      font-size: 0.85rem;
+    .link-entity-label {
+      font-size: 0.72rem;
       color: var(--text-muted);
-      transition: transform 0.3s ease, color 0.3s ease;
+      font-weight: 500;
+      line-height: 1.25;
+      margin-top: 3px;
+      letter-spacing: -0.01em;
+    }
+
+    .link-desc {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .link-arrow-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0f5a36 0%, #10b981 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.35);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       flex-shrink: 0;
     }
 
-    .link-card:hover .link-arrow-icon {
-      transform: translate(3px, -3px);
-      color: var(--text-main);
+    .link-card:hover .link-arrow-circle {
+      background: linear-gradient(135deg, #0c482b 0%, #0d9668 100%);
+      color: #ffffff;
+      transform: translate(2px, -2px) scale(1.08);
+      box-shadow: 0 6px 16px -2px rgba(16, 185, 129, 0.5);
     }
 
     /* ACTION BUTTONS AREA UNDER 4 LINK CARDS */
@@ -1031,45 +1091,69 @@
         <!-- Official Links -->
         <div class="links-grid">
           <!-- note -->
-          <a href="https://note.com/hatrot" target="_blank" class="link-card">
-            <div class="link-left-group">
-              <div class="link-icon-box note-box">
-                <img src="images/note_logo.svg" alt="note" style="width:20px; height:20px;">
+          <a href="https://note.com/hatrot" target="_blank" class="link-card" rel="noopener noreferrer">
+            <div class="link-card-header">
+              <div class="link-left-group">
+                <div class="link-icon-box">
+                  <img src="images/note_logo.svg" alt="note" style="width:20px; height:20px;">
+                </div>
+                <div class="link-text-group">
+                  <div class="link-title-row">
+                    <h3 class="link-name">note</h3>
+                    <div class="link-sub">@hatrot</div>
+                  </div>
+                  <div class="link-entity-label">Engineering at H.A.Trot Co.,Ltd.</div>
+                </div>
               </div>
-              <div class="link-text-group">
-                <div class="link-name">note</div>
-                <div class="link-sub">@hatrot</div>
-              </div>
-            </div>
-            <i class="fa-solid fa-arrow-up-right-from-square link-arrow-icon"></i>
-          </a>
-
-          <!-- X -->
-          <a href="https://x.com/trotcojp" target="_blank" class="link-card">
-            <div class="link-left-group">
-              <div class="link-icon-box x-box">
-                <img src="images/x_logo.svg" alt="X" style="width:18px; height:18px;">
-              </div>
-              <div class="link-text-group">
-                <div class="link-name">X (Twitter)</div>
-                <div class="link-sub">@trotcojp</div>
+              <div class="link-arrow-circle">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
               </div>
             </div>
-            <i class="fa-solid fa-arrow-up-right-from-square link-arrow-icon"></i>
+            <p class="link-desc">H.A.Trotの中の人が、日々の開発やAI活用の実験で得た知見・考察を記録・発信しています。</p>
           </a>
 
           <!-- GitHub -->
-          <a href="https://github.com/hatrot" target="_blank" class="link-card">
-            <div class="link-left-group">
-              <div class="link-icon-box github-box">
-                <i class="fa-brands fa-github"></i>
+          <a href="https://github.com/hatrot" target="_blank" class="link-card" rel="noopener noreferrer">
+            <div class="link-card-header">
+              <div class="link-left-group">
+                <div class="link-icon-box">
+                  <i class="fa-brands fa-github"></i>
+                </div>
+                <div class="link-text-group">
+                  <div class="link-title-row">
+                    <h3 class="link-name">GitHub</h3>
+                    <div class="link-sub">@hatrot</div>
+                  </div>
+                  <div class="link-entity-label">Engineering at H.A.Trot Co.,Ltd.</div>
+                </div>
               </div>
-              <div class="link-text-group">
-                <div class="link-name">GitHub</div>
-                <div class="link-sub">@hatrot</div>
+              <div class="link-arrow-circle">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
               </div>
             </div>
-            <i class="fa-solid fa-arrow-up-right-from-square link-arrow-icon"></i>
+            <p class="link-desc">現場の設計・開発コードや、日々の試行錯誤の実験ログをオープンに公開しています。</p>
+          </a>
+
+          <!-- X -->
+          <a href="https://x.com/trotcojp" target="_blank" class="link-card" rel="noopener noreferrer">
+            <div class="link-card-header">
+              <div class="link-left-group">
+                <div class="link-icon-box">
+                  <img src="images/x_logo.svg" alt="X" style="width:16px; height:16px;">
+                </div>
+                <div class="link-text-group">
+                  <div class="link-title-row">
+                    <h3 class="link-name">X (Twitter)</h3>
+                    <div class="link-sub">@trotcojp</div>
+                  </div>
+                  <div class="link-entity-label">Official account of H.A.Trot Co.,Ltd.</div>
+                </div>
+              </div>
+              <div class="link-arrow-circle">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </div>
+            </div>
+            <p class="link-desc">公式からのお知らせや日々の開発の様子、最新のアップデートをリアルタイムに発信しています。</p>
           </a>
         </div>
 
